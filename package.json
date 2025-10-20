@@ -1,0 +1,21 @@
+{
+  "name": "3d-product-configurator",
+  "version": "1.0.0",
+  "description": "A 3D product configurator for customizing shoes with real-time visualization",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 3000",
+    "build": "echo 'No build process needed for static site'"
+  },
+  "keywords": [
+    "3d",
+    "product-configurator",
+    "threejs",
+    "webgl",
+    "customization"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
