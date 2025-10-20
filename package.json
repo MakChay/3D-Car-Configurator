@@ -1,7 +1,7 @@
 {
-  "name": "3d-product-configurator",
+  "name": "3d-car-configurator",
   "version": "1.0.0",
-  "description": "A 3D product configurator for customizing shoes with real-time visualization",
+  "description": "A professional 3D car configurator with realistic models and customization",
   "main": "index.html",
   "scripts": {
     "dev": "python -m http.server 3000",
@@ -9,9 +9,10 @@
   },
   "keywords": [
     "3d",
-    "product-configurator",
+    "car-configurator",
     "threejs",
     "webgl",
+    "automotive",
     "customization"
   ],
   "author": "Your Name",

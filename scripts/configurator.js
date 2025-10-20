@@ -1,66 +1,188 @@
-class ProductConfigurator {
+class CarConfigurator {
     constructor() {
         this.scene = null;
         this.camera = null;
         this.renderer = null;
         this.controls = null;
         this.carModel = null;
+        this.environment = null;
         this.materials = {};
-        this.autoRotate = true;
         
-        // Configuration state
+        // Enhanced configuration state
         this.configuration = {
-            model: 'sports',
-            color: '#2c3e50',
+            model: 'sports-car',
+            color: '#1a1a1a',
             finish: 'gloss',
-            interior: 'black',
-            trim: 'carbon',
-            wheels: 'standard',
-            calipers: 'black',
-            features: {
-                spoiler: false,
-                exhaust: false,
-                suspension: false,
-                sunroof: false,
-                lights: false,
-                windows: true
+            interior: {
+                material: 'leather-black',
+                trim: 'carbon'
             },
-            basePrice: 65000,
-            totalPrice: 65800
+            wheels: {
+                design: 'aero',
+                calipers: 'black',
+                tires: 'summer'
+            },
+            features: {
+                'spoiler': true,
+                'sport-exhaust': false,
+                'suspension': true,
+                'premium-sound': true,
+                'sunroof': false,
+                'led-lights': true
+            },
+            basePrice: 185000,
+            optionsTotal: 12500,
+            totalPrice: 197500
         };
         
+        // Enhanced car models data
+        this.carModels = {
+            'sports-car': {
+                name: 'Hyper Sport',
+                description: '0-100 km/h in 2.9s • Top speed 350 km/h',
+                basePrice: 185000,
+                specs: {
+                    acceleration: '2.9s',
+                    topSpeed: '350 km/h',
+                    power: '650 HP',
+                    torque: '800 Nm'
+                }
+            },
+            'sedan': {
+                name: 'GT Sedan',
+                description: 'Executive luxury with premium comfort and technology',
+                basePrice: 95000,
+                specs: {
+                    acceleration: '4.2s',
+                    topSpeed: '280 km/h',
+                    power: '450 HP',
+                    torque: '600 Nm'
+                }
+            },
+            'suv': {
+                name: 'Urban SUV',
+                description: 'Spacious and versatile with premium features',
+                basePrice: 75000,
+                specs: {
+                    acceleration: '5.8s',
+                    topSpeed: '240 km/h',
+                    power: '380 HP',
+                    torque: '550 Nm'
+                }
+            },
+            'truck': {
+                name: 'Adventure 4x4',
+                description: 'Rugged capability with modern comfort',
+                basePrice: 65000,
+                specs: {
+                    acceleration: '7.2s',
+                    topSpeed: '200 km/h',
+                    power: '320 HP',
+                    torque: '700 Nm'
+                }
+            }
+        };
+        
+        // Enhanced option prices
+        this.optionPrices = {
+            color: {
+                '#1a1a1a': 0,
+                '#dc2626': 1200,
+                '#2563eb': 1200,
+                '#f59e0b': 2500,
+                '#ffffff': 800,
+                '#6b7280': 900
+            },
+            finish: {
+                'gloss': 0,
+                'matte': 3500,
+                'metallic': 2200,
+                'chrome': 5000
+            },
+            interior: {
+                'leather-black': 0,
+                'leather-brown': 3500,
+                'leather-beige': 2800,
+                'alcantara': 4200
+            },
+            trim: {
+                'carbon': 0,
+                'wood': 2800,
+                'aluminum': 1800,
+                'titanium': 5500
+            },
+            wheels: {
+                'aero': 0,
+                'sport': 2500,
+                'premium': 4800,
+                'racing': 7200
+            },
+            calipers: {
+                'black': 0,
+                'red': 1200,
+                'yellow': 1200,
+                'blue': 1200
+            },
+            tires: {
+                'summer': 0,
+                'performance': 1800,
+                'track': 3200
+            },
+            features: {
+                'spoiler': 4500,
+                'sport-exhaust': 3200,
+                'suspension': 5800,
+                'premium-sound': 4200,
+                'sunroof': 2800,
+                'led-lights': 2200
+            }
+        };
+
         this.init();
     }
-    
+
     async init() {
-        this.createScene();
-        this.setupLighting();
-        await this.loadCarModel();
-        this.setupControls();
-        this.setupEventListeners();
-        this.animate();
-        this.hideLoading();
+        try {
+            this.createScene();
+            this.setupLighting();
+            this.setupControls();
+            this.setupEventListeners();
+            await this.loadCarModel();
+            this.animate();
+            this.hideLoading();
+            this.updatePriceDisplay();
+        } catch (error) {
+            console.error('Failed to initialize configurator:', error);
+            this.showError('Failed to load car configurator. Please refresh the page.');
+        }
     }
-    
+
     createScene() {
-        // Create scene
+        // Create scene with better environment
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x0c0c0c);
-        this.scene.fog = new THREE.Fog(0x0c0c0c, 10, 50);
+        this.scene.background = new THREE.Color(0x0f172a);
         
-        // Create camera
+        // Create a simple environment map for reflections
+        this.scene.environment = this.createSimpleEnvironmentMap();
+        
+        // Create camera with better settings
         this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-        this.camera.position.set(8, 4, 8);
+        this.camera.position.set(6, 3, 10);
         
-        // Create renderer
+        // Create advanced renderer
         this.renderer = new THREE.WebGLRenderer({ 
             antialias: true,
-            alpha: true 
+            alpha: true,
+            powerPreference: "high-performance"
         });
+        
         this.renderer.setSize(800, 500);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.physicallyCorrectLights = true;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.2;
         
         const viewer = document.getElementById('viewer');
         viewer.innerHTML = '';
@@ -68,92 +190,298 @@ class ProductConfigurator {
         
         this.onWindowResize();
     }
-    
+
+    createSimpleEnvironmentMap() {
+        // Create a simple environment map without PMREMGenerator
+        const canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        
+        // Create gradient background
+        const gradient = context.createLinearGradient(0, 0, 256, 256);
+        gradient.addColorStop(0, '#1e293b');
+        gradient.addColorStop(1, '#0f172a');
+        context.fillStyle = gradient;
+        context.fillRect(0, 0, 256, 256);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        return texture;
+    }
+
     setupLighting() {
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        // Enhanced studio lighting setup
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
         this.scene.add(ambientLight);
         
-        // Main directional light (sun)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(10, 15, 10);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 50;
-        directionalLight.shadow.camera.left = -20;
-        directionalLight.shadow.camera.right = 20;
-        directionalLight.shadow.camera.top = 20;
-        directionalLight.shadow.camera.bottom = -20;
-        this.scene.add(directionalLight);
+        // Key light - main illumination
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(10, 15, 8);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;
+        keyLight.shadow.camera.near = 0.5;
+        keyLight.shadow.camera.far = 50;
+        keyLight.shadow.camera.left = -20;
+        keyLight.shadow.camera.right = 20;
+        keyLight.shadow.camera.top = 20;
+        keyLight.shadow.camera.bottom = -20;
+        this.scene.add(keyLight);
         
-        // Fill light
-        const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
-        fillLight.position.set(-10, 5, -10);
+        // Fill light - soft illumination from opposite side
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        fillLight.position.set(-8, 10, -6);
         this.scene.add(fillLight);
         
-        // Rim light
-        const rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
-        rimLight.position.set(0, 5, -15);
+        // Rim light - backlight for edge definition
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        rimLight.position.set(-5, 8, -12);
         this.scene.add(rimLight);
         
-        // Ground plane
-        const groundGeometry = new THREE.PlaneGeometry(50, 50);
-        const groundMaterial = new THREE.MeshStandardMaterial({
-            color: 0x222222,
-            roughness: 0.8,
-            metalness: 0.2
+        // Ground light - bounce light from floor
+        const groundLight = new THREE.DirectionalLight(0x404080, 0.3);
+        groundLight.position.set(0, -10, 0);
+        this.scene.add(groundLight);
+
+        this.createEnhancedEnvironment();
+    }
+
+    createEnhancedEnvironment() {
+        // Reflective floor for better car presentation
+        const floorGeometry = new THREE.PlaneGeometry(40, 40);
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.1,
+            metalness: 0.9
         });
-        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        this.scene.add(ground);
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        this.scene.add(floor);
         
-        // Grid helper
-        const gridHelper = new THREE.GridHelper(50, 50, 0x444444, 0x222222);
+        // Enhanced grid helper
+        const gridHelper = new THREE.GridHelper(40, 40, 0x444444, 0x222222);
+        gridHelper.position.y = 0.01;
         this.scene.add(gridHelper);
+        
+        // Background elements for visual interest
+        this.createBackgroundElements();
     }
-    
-    async loadCarModel() {
-        return new Promise((resolve) => {
-            // Create a realistic car model using primitives
-            this.createRealisticCarModel();
-            resolve();
+
+    createBackgroundElements() {
+        // Add some subtle background elements for visual appeal
+        const backgroundGroup = new THREE.Group();
+        
+        // Create some abstract shapes in the background
+        for (let i = 0; i < 5; i++) {
+            const geometry = new THREE.BoxGeometry(2, 0.5, 0.2);
+            const material = new THREE.MeshBasicMaterial({
+                color: 0x334155,
+                transparent: true,
+                opacity: 0.1
+            });
+            const box = new THREE.Mesh(geometry, material);
+            box.position.set(
+                (Math.random() - 0.5) * 30,
+                0.5,
+                -15 - Math.random() * 10
+            );
+            box.rotation.y = Math.random() * Math.PI;
+            backgroundGroup.add(box);
+        }
+        
+        this.scene.add(backgroundGroup);
+    }
+
+    setupControls() {
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        this.controls.autoRotate = true;
+        this.controls.autoRotateSpeed = 0.8;
+        this.controls.minDistance = 3;
+        this.controls.maxDistance = 20;
+        this.controls.maxPolarAngle = Math.PI / 2;
+        this.controls.enablePan = false;
+    }
+
+    setupEventListeners() {
+        // Window resize
+        window.addEventListener('resize', () => this.onWindowResize());
+        
+        // Model selection
+        document.querySelectorAll('.model-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const model = e.currentTarget.dataset.model;
+                this.selectModel(model);
+            });
+        });
+        
+        // Configuration steps
+        document.querySelectorAll('.step').forEach(step => {
+            step.addEventListener('click', (e) => {
+                const stepName = e.currentTarget.dataset.step;
+                this.showConfigurationStep(stepName);
+            });
+        });
+        
+        // Color selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const color = e.currentTarget.dataset.color;
+                this.selectColor(color);
+            });
+        });
+        
+        // Finish selection
+        document.querySelectorAll('.finish-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const finish = e.currentTarget.dataset.finish;
+                this.selectFinish(finish);
+            });
+        });
+        
+        // Interior material selection
+        document.querySelectorAll('.material-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const material = e.currentTarget.dataset.material;
+                this.selectInteriorMaterial(material);
+            });
+        });
+        
+        // Trim selection
+        document.querySelectorAll('.trim-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const trim = e.currentTarget.dataset.trim;
+                this.selectTrim(trim);
+            });
+        });
+        
+        // Wheel selection
+        document.querySelectorAll('.wheel-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const wheels = e.currentTarget.dataset.wheels;
+                this.selectWheels(wheels);
+            });
+        });
+        
+        // Caliper selection
+        document.querySelectorAll('.caliper-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const calipers = e.currentTarget.dataset.calipers;
+                this.selectCalipers(calipers);
+            });
+        });
+        
+        // Tire selection
+        document.querySelectorAll('.tire-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const tires = e.currentTarget.dataset.tires;
+                this.selectTires(tires);
+            });
+        });
+        
+        // Feature toggles
+        document.querySelectorAll('.feature-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                const feature = e.currentTarget.dataset.feature;
+                this.toggleFeature(feature);
+            });
+        });
+        
+        // Viewer controls
+        document.getElementById('rotate-toggle').addEventListener('click', () => {
+            this.toggleAutoRotate();
+        });
+        
+        document.getElementById('reset-view').addEventListener('click', () => {
+            this.resetView();
+        });
+        
+        document.getElementById('toggle-lights').addEventListener('click', () => {
+            this.toggleHeadlights();
+        });
+        
+        // Camera presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const view = e.currentTarget.dataset.view;
+                this.setCameraView(view);
+            });
+        });
+        
+        // Action buttons
+        document.getElementById('save-config').addEventListener('click', () => {
+            this.saveConfiguration();
+        });
+        
+        document.getElementById('share-config').addEventListener('click', () => {
+            this.shareConfiguration();
+        });
+        
+        document.getElementById('contact-dealer').addEventListener('click', () => {
+            this.contactDealer();
         });
     }
-    
-    createRealisticCarModel() {
+
+    async loadCarModel() {
+        this.showLoading();
+        
+        try {
+            // Create enhanced car model with better geometry
+            this.createEnhancedCarModel();
+            
+            // Simulate loading time for better UX
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            this.hideLoading();
+        } catch (error) {
+            console.error('Error loading car model:', error);
+            this.showError('Failed to load car model. Please try again.');
+        }
+    }
+
+    createEnhancedCarModel() {
+        if (this.carModel) {
+            this.scene.remove(this.carModel);
+        }
+        
         this.carModel = new THREE.Group();
+        this.carModel.name = 'car';
         
-        // Car body (main chassis)
-        const body = this.createCarBody();
-        this.carModel.add(body);
+        // Create main car body with better geometry
+        const bodyGroup = this.createCarBody();
+        this.carModel.add(bodyGroup);
         
-        // Windows
-        const windows = this.createWindows();
-        this.carModel.add(windows);
+        // Add detailed wheels
+        const wheelPositions = [
+            [-1.2, -0.4, 2.5],
+            [1.2, -0.4, 2.5],
+            [-1.2, -0.4, -2.5],
+            [1.2, -0.4, -2.5]
+        ];
         
-        // Wheels
-        this.wheels = this.createWheels();
-        this.carModel.add(this.wheels);
+        wheelPositions.forEach((position, index) => {
+            const wheel = this.createDetailedWheel();
+            wheel.position.set(position[0], position[1], position[2]);
+            this.carModel.add(wheel);
+        });
         
-        // Lights
-        const lights = this.createLights();
-        this.carModel.add(lights);
-        
-        // Details
-        const details = this.createDetails();
-        this.carModel.add(details);
+        // Add spoiler if selected
+        if (this.configuration.features.spoiler) {
+            const spoiler = this.createSpoiler();
+            this.carModel.add(spoiler);
+        }
         
         this.scene.add(this.carModel);
     }
-    
+
     createCarBody() {
         const bodyGroup = new THREE.Group();
         
-        // Main body
-        const bodyGeometry = new THREE.BoxGeometry(4.5, 1.2, 12);
+        // Main body - more detailed geometry
+        const bodyGeometry = new THREE.BoxGeometry(4.2, 1.4, 8.5, 8, 6, 16);
         this.materials.body = new THREE.MeshStandardMaterial({
             color: new THREE.Color(this.configuration.color),
             roughness: this.getRoughnessForFinish(this.configuration.finish),
@@ -163,518 +491,539 @@ class ProductConfigurator {
         const body = new THREE.Mesh(bodyGeometry, this.materials.body);
         body.castShadow = true;
         body.receiveShadow = true;
-        body.position.y = 0.6;
         bodyGroup.add(body);
         
-        // Roof
-        const roofGeometry = new THREE.BoxGeometry(3.2, 0.8, 4);
-        const roof = new THREE.Mesh(roofGeometry, this.materials.body);
-        roof.castShadow = true;
-        roof.receiveShadow = true;
-        roof.position.set(0, 1.8, -1);
-        bodyGroup.add(roof);
-        
-        // Hood
-        const hoodGeometry = new THREE.BoxGeometry(3.5, 0.4, 3);
-        const hood = new THREE.Mesh(hoodGeometry, this.materials.body);
-        hood.castShadow = true;
-        hood.receiveShadow = true;
-        hood.position.set(0, 0.8, 3.5);
-        bodyGroup.add(hood);
-        
-        // Trunk
-        const trunkGeometry = new THREE.BoxGeometry(3.5, 0.5, 2.5);
-        const trunk = new THREE.Mesh(trunkGeometry, this.materials.body);
-        trunk.castShadow = true;
-        trunk.receiveShadow = true;
-        trunk.position.set(0, 0.75, -4.5);
-        bodyGroup.add(trunk);
-        
-        // Front bumper
-        const frontBumperGeometry = new THREE.BoxGeometry(4, 0.3, 1);
-        const frontBumper = new THREE.Mesh(frontBumperGeometry, this.materials.body);
-        frontBumper.position.set(0, 0.15, 5.5);
-        bodyGroup.add(frontBumper);
-        
-        // Rear bumper
-        const rearBumperGeometry = new THREE.BoxGeometry(4, 0.3, 1);
-        const rearBumper = new THREE.Mesh(rearBumperGeometry, this.materials.body);
-        rearBumper.position.set(0, 0.15, -5.5);
-        bodyGroup.add(rearBumper);
-        
-        return bodyGroup;
-    }
-    
-    createWindows() {
-        const windowGroup = new THREE.Group();
-        
-        // Windshield material
-        this.materials.window = new THREE.MeshStandardMaterial({
-            color: 0x87ceeb,
+        // Windshield
+        const windshieldGeometry = new THREE.BoxGeometry(3.8, 0.8, 2.5);
+        const windshieldMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x88ccff,
+            transmission: 0.9,
             transparent: true,
             opacity: 0.3,
             roughness: 0.1,
-            metalness: 0.9
+            metalness: 0,
+            clearcoat: 1,
+            clearcoatRoughness: 0.1
+        });
+        const windshield = new THREE.Mesh(windshieldGeometry, windshieldMaterial);
+        windshield.position.set(0, 1.1, 1.2);
+        windshield.castShadow = true;
+        bodyGroup.add(windshield);
+        
+        // Windows
+        const sideWindowGeometry = new THREE.BoxGeometry(1.5, 0.6, 3);
+        const sideWindowMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x334455,
+            transmission: 0.8,
+            transparent: true,
+            opacity: 0.2,
+            roughness: 0.1
         });
         
-        // Windshield
-        const windshieldGeometry = new THREE.BoxGeometry(3, 0.8, 0.1);
-        const windshield = new THREE.Mesh(windshieldGeometry, this.materials.window);
-        windshield.position.set(0, 1.6, 1.5);
-        windshield.rotation.x = Math.PI / 8;
-        windowGroup.add(windshield);
+        const leftWindow = new THREE.Mesh(sideWindowGeometry, sideWindowMaterial);
+        leftWindow.position.set(-1.8, 1.0, 0);
+        bodyGroup.add(leftWindow);
         
-        // Rear window
-        const rearWindowGeometry = new THREE.BoxGeometry(3, 0.6, 0.1);
-        const rearWindow = new THREE.Mesh(rearWindowGeometry, this.materials.window);
-        rearWindow.position.set(0, 1.6, -3);
-        rearWindow.rotation.x = -Math.PI / 8;
-        windowGroup.add(rearWindow);
-        
-        // Side windows
-        const sideWindowGeometry = new THREE.BoxGeometry(0.1, 0.6, 3);
-        
-        const leftWindow = new THREE.Mesh(sideWindowGeometry, this.materials.window);
-        leftWindow.position.set(-2.1, 1.6, -0.5);
-        windowGroup.add(leftWindow);
-        
-        const rightWindow = new THREE.Mesh(sideWindowGeometry, this.materials.window);
-        rightWindow.position.set(2.1, 1.6, -0.5);
-        windowGroup.add(rightWindow);
-        
-        return windowGroup;
-    }
-    
-    createWheels() {
-        const wheelsGroup = new THREE.Group();
-        
-        // Wheel material
-        this.materials.wheel = new THREE.MeshStandardMaterial({
-            color: 0x111111,
-            roughness: 0.8,
-            metalness: 0.2
-        });
-        
-        this.materials.rim = new THREE.MeshStandardMaterial({
-            color: 0xcccccc,
-            roughness: 0.3,
-            metalness: 0.8
-        });
-        
-        this.materials.calipers = new THREE.MeshStandardMaterial({
-            color: 0x2c3e50, // Default black
-            roughness: 0.5,
-            metalness: 0.3
-        });
-        
-        // Wheel positions [x, y, z]
-        const wheelPositions = [
-            [-1.5, 0.6, 3.5],   // Front left
-            [1.5, 0.6, 3.5],    // Front right
-            [-1.5, 0.6, -3.5],  // Rear left
-            [1.5, 0.6, -3.5]    // Rear right
-        ];
-        
-        wheelPositions.forEach((position) => {
-            const wheelAssembly = this.createWheelAssembly();
-            wheelAssembly.position.set(position[0], position[1], position[2]);
-            wheelsGroup.add(wheelAssembly);
-        });
-        
-        return wheelsGroup;
-    }
-    
-    createWheelAssembly() {
-        const wheelGroup = new THREE.Group();
-        
-        // Tire
-        const tireGeometry = new THREE.CylinderGeometry(0.7, 0.7, 0.4, 16);
-        const tire = new THREE.Mesh(tireGeometry, this.materials.wheel);
-        tire.rotation.z = Math.PI / 2;
-        wheelGroup.add(tire);
-        
-        // Rim
-        const rimGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.42, 12);
-        const rim = new THREE.Mesh(rimGeometry, this.materials.rim);
-        rim.rotation.z = Math.PI / 2;
-        wheelGroup.add(rim);
-        
-        // Wheel spokes
-        const spokeGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.1);
-        for (let i = 0; i < 8; i++) {
-            const spoke = new THREE.Mesh(spokeGeometry, this.materials.rim);
-            spoke.rotation.z = (i * Math.PI) / 4;
-            wheelGroup.add(spoke);
-        }
-        
-        // Brake caliper
-        const caliperGeometry = new THREE.BoxGeometry(0.3, 0.2, 0.15);
-        const caliper = new THREE.Mesh(caliperGeometry, this.materials.calipers);
-        caliper.position.set(0.5, 0, 0);
-        wheelGroup.add(caliper);
-        
-        return wheelGroup;
-    }
-    
-    createLights() {
-        const lightsGroup = new THREE.Group();
+        const rightWindow = new THREE.Mesh(sideWindowGeometry, sideWindowMaterial);
+        rightWindow.position.set(1.8, 1.0, 0);
+        bodyGroup.add(rightWindow);
         
         // Headlights
-        const headlightGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-        this.materials.headlight = new THREE.MeshStandardMaterial({
+        const headlightGeometry = new THREE.SphereGeometry(0.3, 8, 6);
+        const headlightMaterial = new THREE.MeshPhysicalMaterial({
             color: 0xffffcc,
-            emissive: 0xffff00,
+            emissive: 0xffff99,
+            emissiveIntensity: 0.3,
+            transparent: true,
+            opacity: 0.9
+        });
+        
+        const leftHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+        leftHeadlight.position.set(-1.0, 0.6, 3.8);
+        leftHeadlight.scale.set(1, 0.5, 0.3);
+        bodyGroup.add(leftHeadlight);
+        
+        const rightHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+        rightHeadlight.position.set(1.0, 0.6, 3.8);
+        rightHeadlight.scale.set(1, 0.5, 0.3);
+        bodyGroup.add(rightHeadlight);
+        
+        // Taillights
+        const taillightGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.2);
+        const taillightMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0xff3333,
+            emissive: 0xff0000,
             emissiveIntensity: 0.5
         });
         
-        const leftHeadlight = new THREE.Mesh(headlightGeometry, this.materials.headlight);
-        leftHeadlight.position.set(-1.2, 0.8, 5);
-        lightsGroup.add(leftHeadlight);
+        const leftTaillight = new THREE.Mesh(taillightGeometry, taillightMaterial);
+        leftTaillight.position.set(-1.2, 0.6, -3.8);
+        bodyGroup.add(leftTaillight);
         
-        const rightHeadlight = new THREE.Mesh(headlightGeometry, this.materials.headlight);
-        rightHeadlight.position.set(1.2, 0.8, 5);
-        lightsGroup.add(rightHeadlight);
+        const rightTaillight = new THREE.Mesh(taillightGeometry, taillightMaterial);
+        rightTaillight.position.set(1.2, 0.6, -3.8);
+        bodyGroup.add(rightTaillight);
         
-        // Taillights
-        const taillightGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.1);
-        this.materials.taillight = new THREE.MeshStandardMaterial({
-            color: 0xff0000,
-            emissive: 0xff0000,
-            emissiveIntensity: 0.8
-        });
-        
-        const leftTaillight = new THREE.Mesh(taillightGeometry, this.materials.taillight);
-        leftTaillight.position.set(-1.2, 0.8, -5);
-        lightsGroup.add(leftTaillight);
-        
-        const rightTaillight = new THREE.Mesh(taillightGeometry, this.materials.taillight);
-        rightTaillight.position.set(1.2, 0.8, -5);
-        lightsGroup.add(rightTaillight);
-        
-        return lightsGroup;
+        return bodyGroup;
     }
-    
-    createDetails() {
-        const detailsGroup = new THREE.Group();
+
+    createDetailedWheel() {
+        const wheelGroup = new THREE.Group();
         
-        // Grille
-        const grilleGeometry = new THREE.BoxGeometry(2.5, 0.6, 0.1);
-        const grilleMaterial = new THREE.MeshStandardMaterial({
+        // Tire with better geometry
+        const tireGeometry = new THREE.CylinderGeometry(0.55, 0.55, 0.35, 16);
+        const tireMaterial = new THREE.MeshStandardMaterial({
             color: 0x111111,
             roughness: 0.8,
-            metalness: 0.2
+            metalness: 0.1
         });
-        const grille = new THREE.Mesh(grilleGeometry, grilleMaterial);
-        grille.position.set(0, 0.8, 4.8);
-        detailsGroup.add(grille);
+        const tire = new THREE.Mesh(tireGeometry, tireMaterial);
+        tire.rotation.z = Math.PI / 2;
+        tire.castShadow = true;
+        wheelGroup.add(tire);
         
-        // Side mirrors
-        const mirrorGeometry = new THREE.BoxGeometry(0.3, 0.2, 0.1);
-        const mirrorMaterial = new THREE.MeshStandardMaterial({
-            color: 0x2c3e50,
+        // Rim with detailed design
+        const rimGeometry = new THREE.CylinderGeometry(0.42, 0.42, 0.36, 12);
+        const rimMaterial = new THREE.MeshStandardMaterial({
+            color: 0xcccccc,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+        rim.rotation.z = Math.PI / 2;
+        rim.castShadow = true;
+        wheelGroup.add(rim);
+        
+        // Wheel spokes
+        const spokeGeometry = new THREE.BoxGeometry(0.3, 0.08, 0.08);
+        const spokeMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            roughness: 0.3,
+            metalness: 0.9
+        });
+        
+        for (let i = 0; i < 6; i++) {
+            const spoke = new THREE.Mesh(spokeGeometry, spokeMaterial);
+            spoke.rotation.z = (i * Math.PI) / 3;
+            spoke.position.y = 0.02;
+            wheelGroup.add(spoke);
+        }
+        
+        // Center cap
+        const capGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.1, 8);
+        const capMaterial = new THREE.MeshStandardMaterial({
+            color: 0x333333,
             roughness: 0.4,
             metalness: 0.6
         });
+        const cap = new THREE.Mesh(capGeometry, capMaterial);
+        cap.rotation.z = Math.PI / 2;
+        wheelGroup.add(cap);
         
-        const leftMirror = new THREE.Mesh(mirrorGeometry, mirrorMaterial);
-        leftMirror.position.set(-2.3, 1.4, 1.5);
-        detailsGroup.add(leftMirror);
+        return wheelGroup;
+    }
+
+    createSpoiler() {
+        const spoilerGroup = new THREE.Group();
         
-        const rightMirror = new THREE.Mesh(mirrorGeometry, mirrorMaterial);
-        rightMirror.position.set(2.3, 1.4, 1.5);
-        detailsGroup.add(rightMirror);
-        
-        // Door handles
-        const handleGeometry = new THREE.BoxGeometry(0.4, 0.05, 0.1);
-        const handleMaterial = new THREE.MeshStandardMaterial({
-            color: 0x333333,
+        // Main spoiler wing
+        const wingGeometry = new THREE.BoxGeometry(3.5, 0.1, 0.8);
+        const wingMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
             roughness: 0.3,
             metalness: 0.7
         });
+        const wing = new THREE.Mesh(wingGeometry, wingMaterial);
+        wing.position.set(0, 1.8, -3.5);
+        spoilerGroup.add(wing);
         
-        const leftHandle = new THREE.Mesh(handleGeometry, handleMaterial);
-        leftHandle.position.set(-2.1, 1.0, 0);
-        detailsGroup.add(leftHandle);
+        // Supports
+        const supportGeometry = new THREE.BoxGeometry(0.1, 0.6, 0.1);
+        const leftSupport = new THREE.Mesh(supportGeometry, wingMaterial);
+        leftSupport.position.set(-1.5, 1.5, -3.5);
+        spoilerGroup.add(leftSupport);
         
-        const rightHandle = new THREE.Mesh(handleGeometry, handleMaterial);
-        rightHandle.position.set(2.1, 1.0, 0);
-        detailsGroup.add(rightHandle);
+        const rightSupport = new THREE.Mesh(supportGeometry, wingMaterial);
+        rightSupport.position.set(1.5, 1.5, -3.5);
+        spoilerGroup.add(rightSupport);
         
-        return detailsGroup;
+        return spoilerGroup;
     }
-    
+
+    // Configuration methods
+    selectModel(model) {
+        this.configuration.model = model;
+        this.configuration.basePrice = this.carModels[model].basePrice;
+        
+        // Update UI
+        document.querySelectorAll('.model-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        document.querySelector(`[data-model="${model}"]`).classList.add('active');
+        
+        document.getElementById('current-model').textContent = this.carModels[model].name;
+        document.getElementById('model-description').textContent = this.carModels[model].description;
+        
+        this.updatePriceDisplay();
+        this.loadCarModel();
+    }
+
+    selectColor(color) {
+        this.configuration.color = color;
+        
+        // Update UI
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-color="${color}"]`).classList.add('active');
+        
+        // Update 3D model
+        if (this.materials.body) {
+            this.materials.body.color.set(color);
+        }
+        
+        this.updatePriceDisplay();
+    }
+
+    selectFinish(finish) {
+        this.configuration.finish = finish;
+        
+        // Update UI
+        document.querySelectorAll('.finish-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-finish="${finish}"]`).classList.add('active');
+        
+        // Update 3D model
+        if (this.materials.body) {
+            this.materials.body.roughness = this.getRoughnessForFinish(finish);
+            this.materials.body.metalness = this.getMetalnessForFinish(finish);
+        }
+        
+        this.updatePriceDisplay();
+    }
+
+    selectInteriorMaterial(material) {
+        this.configuration.interior.material = material;
+        
+        // Update UI
+        document.querySelectorAll('.material-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-material="${material}"]`).classList.add('active');
+        
+        this.updatePriceDisplay();
+    }
+
+    selectTrim(trim) {
+        this.configuration.interior.trim = trim;
+        
+        // Update UI
+        document.querySelectorAll('.trim-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-trim="${trim}"]`).classList.add('active');
+        
+        this.updatePriceDisplay();
+    }
+
+    selectWheels(wheels) {
+        this.configuration.wheels.design = wheels;
+        
+        // Update UI
+        document.querySelectorAll('.wheel-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-wheels="${wheels}"]`).classList.add('active');
+        
+        this.updatePriceDisplay();
+    }
+
+    selectCalipers(calipers) {
+        this.configuration.wheels.calipers = calipers;
+        
+        // Update UI
+        document.querySelectorAll('.caliper-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-calipers="${calipers}"]`).classList.add('active');
+        
+        this.updatePriceDisplay();
+    }
+
+    selectTires(tires) {
+        this.configuration.wheels.tires = tires;
+        
+        // Update UI
+        document.querySelectorAll('.tire-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-tires="${tires}"]`).classList.add('active');
+        
+        this.updatePriceDisplay();
+    }
+
+    toggleFeature(feature) {
+        this.configuration.features[feature] = !this.configuration.features[feature];
+        
+        // Update UI
+        const option = document.querySelector(`[data-feature="${feature}"]`);
+        option.classList.toggle('active');
+        
+        // Update 3D model for visual features
+        if (feature === 'spoiler') {
+            this.toggleSpoiler(this.configuration.features[feature]);
+        }
+        
+        this.updatePriceDisplay();
+    }
+
+    toggleSpoiler(visible) {
+        // Remove existing spoiler
+        const existingSpoiler = this.carModel.getObjectByName('spoiler');
+        if (existingSpoiler) {
+            this.carModel.remove(existingSpoiler);
+        }
+        
+        // Add spoiler if enabled
+        if (visible) {
+            const spoiler = this.createSpoiler();
+            spoiler.name = 'spoiler';
+            this.carModel.add(spoiler);
+        }
+    }
+
+    toggleHeadlights() {
+        // Toggle headlight emissive intensity
+        const headlights = this.carModel.children.flatMap(child => 
+            child.children.filter(obj => obj.material && obj.material.emissive)
+        );
+        
+        headlights.forEach(light => {
+            light.material.emissiveIntensity = light.material.emissiveIntensity > 0 ? 0 : 0.5;
+        });
+        
+        const btn = document.getElementById('toggle-lights');
+        btn.classList.toggle('active', headlights[0]?.material.emissiveIntensity > 0);
+    }
+
+    showConfigurationStep(step) {
+        // Update steps
+        document.querySelectorAll('.step').forEach(s => {
+            s.classList.remove('active');
+        });
+        document.querySelector(`[data-step="${step}"]`).classList.add('active');
+        
+        // Show corresponding section
+        document.querySelectorAll('.config-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(`${step}-section`).classList.add('active');
+    }
+
+    // Price calculation
+    calculateOptionsTotal() {
+        let total = 0;
+        
+        // Color
+        total += this.optionPrices.color[this.configuration.color];
+        
+        // Finish
+        total += this.optionPrices.finish[this.configuration.finish];
+        
+        // Interior
+        total += this.optionPrices.interior[this.configuration.interior.material];
+        total += this.optionPrices.trim[this.configuration.interior.trim];
+        
+        // Wheels
+        total += this.optionPrices.wheels[this.configuration.wheels.design];
+        total += this.optionPrices.calipers[this.configuration.wheels.calipers];
+        total += this.optionPrices.tires[this.configuration.wheels.tires];
+        
+        // Features
+        Object.entries(this.configuration.features).forEach(([feature, enabled]) => {
+            if (enabled) {
+                total += this.optionPrices.features[feature];
+            }
+        });
+        
+        return total;
+    }
+
+    updatePriceDisplay() {
+        const optionsTotal = this.calculateOptionsTotal();
+        const totalPrice = this.configuration.basePrice + optionsTotal;
+        
+        this.configuration.optionsTotal = optionsTotal;
+        this.configuration.totalPrice = totalPrice;
+        
+        document.getElementById('base-price').textContent = `$${this.configuration.basePrice.toLocaleString()}`;
+        document.getElementById('options-total').textContent = `+$${optionsTotal.toLocaleString()}`;
+        document.getElementById('final-price').textContent = `$${totalPrice.toLocaleString()}`;
+    }
+
+    // Viewer controls
+    toggleAutoRotate() {
+        this.controls.autoRotate = !this.controls.autoRotate;
+        const btn = document.getElementById('rotate-toggle');
+        btn.classList.toggle('active', this.controls.autoRotate);
+    }
+
+    resetView() {
+        this.controls.reset();
+        this.camera.position.set(6, 3, 10);
+        this.controls.target.set(0, 1, 0);
+        this.controls.update();
+    }
+
+    setCameraView(view) {
+        // Update UI
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-view="${view}"]`).classList.add('active');
+        
+        // Set camera position based on view
+        switch(view) {
+            case 'front':
+                this.camera.position.set(0, 2, 12);
+                this.controls.target.set(0, 1, 0);
+                break;
+            case 'side':
+                this.camera.position.set(12, 2, 0);
+                this.controls.target.set(0, 1, 0);
+                break;
+            case 'rear':
+                this.camera.position.set(0, 2, -12);
+                this.controls.target.set(0, 1, 0);
+                break;
+            case 'interior':
+                this.camera.position.set(0, 1.5, 3);
+                this.controls.target.set(0, 1.2, 0);
+                break;
+        }
+        this.controls.update();
+    }
+
+    // Utility methods
     getRoughnessForFinish(finish) {
         const roughnessMap = {
             'gloss': 0.1,
             'matte': 0.8,
             'metallic': 0.3,
-            'pearl': 0.2
+            'chrome': 0.05
         };
         return roughnessMap[finish] || 0.1;
     }
-    
+
     getMetalnessForFinish(finish) {
         const metalnessMap = {
             'gloss': 0.9,
             'matte': 0.1,
             'metallic': 0.8,
-            'pearl': 0.6
+            'chrome': 1.0
         };
         return metalnessMap[finish] || 0.9;
     }
-    
-    setupControls() {
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.enableDamping = true;
-        this.controls.dampingFactor = 0.05;
-        this.controls.autoRotate = this.autoRotate;
-        this.controls.autoRotateSpeed = 1.0;
-        this.controls.minDistance = 3;
-        this.controls.maxDistance = 20;
-        this.controls.maxPolarAngle = Math.PI / 2;
-    }
-    
-    setupEventListeners() {
-        window.addEventListener('resize', () => this.onWindowResize());
-        
-        // Auto-rotate toggle
-        const rotateBtn = document.getElementById('rotate-btn');
-        rotateBtn.addEventListener('click', () => {
-            this.autoRotate = !this.autoRotate;
-            this.controls.autoRotate = this.autoRotate;
-            rotateBtn.classList.toggle('active', this.autoRotate);
-        });
-        
-        // Reset view
-        const resetBtn = document.getElementById('reset-btn');
-        resetBtn.addEventListener('click', () => {
-            this.controls.reset();
-        });
-        
-        // Camera presets
-        const cameraPresets = document.querySelectorAll('.camera-preset');
-        cameraPresets.forEach(preset => {
-            preset.addEventListener('click', (e) => {
-                const view = e.target.getAttribute('data-view');
-                this.setCameraView(view);
-                
-                cameraPresets.forEach(p => p.classList.remove('active'));
-                e.target.classList.add('active');
-            });
-        });
-        
-        // Configuration steps
-        const steps = document.querySelectorAll('.step');
-        steps.forEach(step => {
-            step.addEventListener('click', (e) => {
-                const stepName = e.target.getAttribute('data-step');
-                this.showControlPanel(stepName);
-                
-                steps.forEach(s => s.classList.remove('active'));
-                e.target.classList.add('active');
-            });
-        });
-        
-        // Color selection
-        const colorOptions = document.querySelectorAll('.color-option[data-color]');
-        colorOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                colorOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                const color = option.getAttribute('data-color');
-                const price = parseInt(option.getAttribute('data-price') || '0');
-                this.changeColor(color, price);
-            });
-        });
-        
-        // Finish selection
-        const finishOptions = document.querySelectorAll('.material-option[data-finish]');
-        finishOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                finishOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                const finish = option.getAttribute('data-finish');
-                const price = parseInt(option.getAttribute('data-price') || '0');
-                this.changeFinish(finish, price);
-            });
-        });
-        
-        // Wheel selection
-        const wheelOptions = document.querySelectorAll('.wheel-option');
-        wheelOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                wheelOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                const wheels = option.getAttribute('data-wheels');
-                const price = parseInt(option.getAttribute('data-price') || '0');
-                this.changeWheels(wheels, price);
-            });
-        });
-        
-        // Caliper color selection
-        const caliperOptions = document.querySelectorAll('.color-option[data-calipers]');
-        caliperOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                caliperOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                
-                const caliperColor = option.getAttribute('data-calipers');
-                const price = parseInt(option.getAttribute('data-price') || '0');
-                this.changeCalipers(caliperColor, price);
-            });
-        });
-        
-        // Feature toggles
-        const featureOptions = document.querySelectorAll('.feature-option');
-        featureOptions.forEach(option => {
-            option.addEventListener('click', (e) => {
-                option.classList.toggle('active');
-                
-                const feature = option.getAttribute('data-feature');
-                const price = parseInt(option.getAttribute('data-price') || '0');
-                const isActive = option.classList.contains('active');
-                this.toggleFeature(feature, isActive, price);
-            });
-        });
-        
-        // Car model selection
-        const carModelSelect = document.getElementById('car-model');
-        carModelSelect.addEventListener('change', (e) => {
-            this.changeCarModel(e.target.value);
-        });
-        
-        // Action buttons
-        document.getElementById('save-btn').addEventListener('click', () => {
-            this.saveConfiguration();
-        });
-        
-        document.getElementById('share-btn').addEventListener('click', () => {
-            this.shareConfiguration();
-        });
-    }
-    
-    setCameraView(view) {
-        switch(view) {
-            case 'front':
-                this.camera.position.set(0, 2, 10);
-                this.controls.target.set(0, 1, 0);
-                break;
-            case 'side':
-                this.camera.position.set(10, 2, 0);
-                this.controls.target.set(0, 1, 0);
-                break;
-            case 'rear':
-                this.camera.position.set(0, 2, -10);
-                this.controls.target.set(0, 1, 0);
-                break;
-            case 'top':
-                this.camera.position.set(0, 10, 0);
-                this.controls.target.set(0, 1, 0);
-                break;
-            case 'interior':
-                this.camera.position.set(0, 3, 3);
-                this.controls.target.set(0, 2, 0);
-                break;
-        }
-        this.controls.update();
-    }
-    
-    showControlPanel(panelName) {
-        // Hide all panels
-        document.querySelectorAll('.control-panel').forEach(panel => {
-            panel.classList.remove('active');
-        });
-        
-        // Show selected panel
-        document.getElementById(`${panelName}-panel`).classList.add('active');
-    }
-    
-    changeColor(color, price) {
-        this.configuration.color = color;
-        if (this.materials.body) {
-            this.materials.body.color.set(color);
-        }
-        this.updatePrice(price, 'color');
-    }
-    
-    changeFinish(finish, price) {
-        this.configuration.finish = finish;
-        if (this.materials.body) {
-            this.materials.body.roughness = this.getRoughnessForFinish(finish);
-            this.materials.body.metalness = this.getMetalnessForFinish(finish);
-        }
-        this.updatePrice(price, 'finish');
-    }
-    
-    changeWheels(wheelType, price) {
-        this.configuration.wheels = wheelType;
-        // In a full implementation, this would swap wheel models
-        console.log(`Changed wheels to: ${wheelType}`);
-        this.updatePrice(price, 'wheels');
-    }
-    
-    changeCalipers(color, price) {
-        this.configuration.calipers = color;
-        if (this.materials.calipers) {
-            const colorMap = {
-                'black': 0x2c3e50,
-                'red': 0xe74c3c,
-                'yellow': 0xf1c40f,
-                'silver': 0xbdc3c7
-            };
-            this.materials.calipers.color.set(colorMap[color] || 0x2c3e50);
-        }
-        this.updatePrice(price, 'calipers');
-    }
-    
-    toggleFeature(feature, enabled, price) {
-        this.configuration.features[feature] = enabled;
-        console.log(`Feature ${feature}: ${enabled ? 'enabled' : 'disabled'}`);
-        
-        // In a full implementation, this would show/hide feature models
-        // For now, we'll just update the price
-        this.updatePrice(enabled ? price : -price, feature);
-    }
-    
-    changeCarModel(model) {
-        this.configuration.model = model;
-        // In a full implementation, this would load a different car model
-        console.log(`Changed car model to: ${model}`);
-    }
-    
-    updatePrice(priceChange, item) {
-        this.configuration.totalPrice = this.configuration.basePrice + priceChange;
-        this.updatePriceDisplay();
-    }
-    
-    updatePriceDisplay() {
-        const totalElement = document.querySelector('.total-amount');
-        if (totalElement) {
-            totalElement.textContent = `$${this.configuration.totalPrice.toLocaleString()}`;
-        }
-    }
-    
+
+    // Action methods
     saveConfiguration() {
-        console.log('Saving configuration:', this.configuration);
-        alert('Your car configuration has been saved! Total: $' + this.configuration.totalPrice.toLocaleString());
+        const configData = {
+            ...this.configuration,
+            timestamp: new Date().toISOString(),
+            configurationId: this.generateId()
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('carConfiguration', JSON.stringify(configData));
+        
+        this.showNotification('Configuration saved successfully!', 'success');
     }
-    
+
     shareConfiguration() {
         const configString = JSON.stringify(this.configuration, null, 2);
-        console.log('Sharing configuration:', configString);
-        alert('Configuration shared! Check console for details.');
-    }
-    
-    hideLoading() {
-        const loadingOverlay = document.getElementById('loading-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.style.display = 'none';
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'My Car Configuration',
+                text: `Check out my ${this.carModels[this.configuration.model].name} configuration!`,
+                url: window.location.href
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(configString).then(() => {
+                this.showNotification('Configuration copied to clipboard!', 'success');
+            });
         }
     }
-    
+
+    contactDealer() {
+        const message = `Hello, I'm interested in the ${this.carModels[this.configuration.model].name} I configured. Total price: $${this.configuration.totalPrice.toLocaleString()}`;
+        window.open(`mailto:hello@autocraftpro.com?subject=Car Configuration Inquiry&body=${encodeURIComponent(message)}`);
+    }
+
+    generateId() {
+        return 'config_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // UI helpers
+    showLoading() {
+        document.getElementById('loading-overlay').style.display = 'flex';
+        // Simulate progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 10;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+            }
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+        }, 100);
+    }
+
+    hideLoading() {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span>${message}</span>
+                <button class="notification-close">&times;</button>
+            </div>
+        `;
+        
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--background-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            z-index: 10000;
+            max-width: 300px;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+
+    showError(message) {
+        this.showNotification(message, 'error');
+    }
+
     onWindowResize() {
         const container = document.querySelector('.viewer-container');
         const width = container.clientWidth;
@@ -684,7 +1033,7 @@ class ProductConfigurator {
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
     }
-    
+
     animate() {
         requestAnimationFrame(() => this.animate());
         this.controls.update();
