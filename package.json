@@ -1,11 +1,13 @@
 {
-  "name": "3d-car-configurator",
+  "name": "3d-shoe-configurator",
   "version": "1.0.0",
-  "description": "A professional 3D car configurator with realistic models and customization",
-  "main": "index.html",
+  "type": "module",
+  "private": true,
+  "description": "3D Car Configurator built with Three.js",
   "scripts": {
-    "dev": "python -m http.server 3000",
-    "build": "echo 'No build process needed for static site'"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [
     "3d",
@@ -17,6 +19,10 @@
   ],
   "author": "Your Name",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "three": "^0.157.0"
+  },
+  "devDependencies": {
+    "vite": "^5.1.0"
+  }
 }

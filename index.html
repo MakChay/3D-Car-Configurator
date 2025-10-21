@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoCraft Pro - Professional Car Configurator</title>
     <meta name="description" content="Design and customize your dream car with professional 3D configurator">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
     <link rel="stylesheet" href="styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -16,6 +17,9 @@
                     <h1>AutoCraft Pro</h1>
                     <span class="tagline">Design Your Dream Car</span>
                 </div>
+                    <div class="header-actions">
+                        <button id="theme-toggle" class="control-btn" aria-label="Toggle theme">🌙</button>
+                    </div>
                 <nav class="main-nav">
                     <a href="#gallery" class="nav-link">Gallery</a>
                     <a href="#about" class="nav-link">About</a>
@@ -44,6 +48,14 @@
                                 <div class="progress-bar">
                                     <div class="progress-fill" id="progress-fill"></div>
                                 </div>
+                                <div class="loading-status" id="loading-status"></div>
+                            </div>
+                        </div>
+                        <div class="error-overlay" id="error-overlay" style="display: none;">
+                            <div class="error-content">
+                                <h3>Error Loading Car</h3>
+                                <p id="error-message"></p>
+                                <button onclick="location.reload()">Try Again</button>
                             </div>
                         </div>
 
@@ -459,14 +471,7 @@
         </footer>
     </div>
 
-    <!-- Three.js Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
-    
     <!-- Application Scripts -->
-    <script src="scripts/configurator.js"></script>
-    <script src="scripts/app.js"></script>
+    <script type="module" src="scripts/app.js"></script>
 </body>
 </html>

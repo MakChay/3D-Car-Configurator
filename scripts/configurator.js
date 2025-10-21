@@ -1,5 +1,13 @@
-class CarConfigurator {
-    constructor() {
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+
+export class CarConfigurator {
+    constructor(options = {}) {
+        this.options = options;
+        this.fallback = !!options.fallback;
         this.scene = null;
         this.camera = null;
         this.renderer = null;
@@ -7,6 +15,8 @@ class CarConfigurator {
         this.carModel = null;
         this.environment = null;
         this.materials = {};
+        // render-on-demand flag
+        this.needsRender = true;
         
         // Enhanced configuration state
         this.configuration = {
@@ -143,14 +153,24 @@ class CarConfigurator {
 
     async init() {
         try {
+            console.log('Initializing configurator...');
             this.createScene();
+            console.log('Scene created');
             this.setupLighting();
+            console.log('Lighting setup complete');
             this.setupControls();
+            console.log('Controls setup complete');
             this.setupEventListeners();
+            console.log('Event listeners setup complete');
             await this.loadCarModel();
-            this.animate();
+            console.log('Car model loaded');
             this.hideLoading();
+            console.log('Loading screen hidden');
             this.updatePriceDisplay();
+            console.log('Price display updated');
+            // Start render loop (render-on-demand)
+            this.startRenderLoop();
+            this.requestRender();
         } catch (error) {
             console.error('Failed to initialize configurator:', error);
             this.showError('Failed to load car configurator. Please refresh the page.');
@@ -162,27 +182,78 @@ class CarConfigurator {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0x0f172a);
         
-        // Create a simple environment map for reflections
-        this.scene.environment = this.createSimpleEnvironmentMap();
+        // Load HDR environment map (skip if fallback)
+        if (this.fallback) {
+            console.log('Fallback mode: using simple environment map');
+            this.scene.environment = this.createSimpleEnvironmentMap();
+        } else {
+            try {
+                const rgbeLoader = new RGBELoader();
+                rgbeLoader.setDataType(THREE.UnsignedByteType);
+                rgbeLoader.load('assets/env/environment.hdr', (texture) => {
+                    texture.mapping = THREE.EquirectangularReflectionMapping;
+                    // Use PMREMGenerator if renderer is ready
+                    try {
+                        const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+                        const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+                        this.scene.environment = envMap;
+                        pmremGenerator.dispose();
+                    } catch (pmremError) {
+                        console.warn('PMREM failed, falling back to equirectangular texture', pmremError);
+                        this.scene.environment = texture;
+                    }
+                }, undefined, (err) => {
+                    console.warn('Failed to load HDR, using simple environment', err);
+                    this.scene.environment = this.createSimpleEnvironmentMap();
+                });
+            } catch (e) {
+                console.warn('RGBELoader not available or failed, using simple environment', e);
+                this.scene.environment = this.createSimpleEnvironmentMap();
+            }
+        }
         
         // Create camera with better settings
         this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
         this.camera.position.set(6, 3, 10);
         
-        // Create advanced renderer
-        this.renderer = new THREE.WebGLRenderer({ 
-            antialias: true,
-            alpha: true,
-            powerPreference: "high-performance"
-        });
-        
-        this.renderer.setSize(800, 500);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.physicallyCorrectLights = true;
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.2;
+        // Create advanced renderer with error handling
+        try {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('webgl2', {
+                alpha: true,
+                antialias: true,
+                powerPreference: "high-performance",
+                failIfMajorPerformanceCaveat: false
+            }) || canvas.getContext('webgl', {
+                alpha: true,
+                antialias: true,
+                powerPreference: "high-performance",
+                failIfMajorPerformanceCaveat: false
+            });
+
+            if (!context) {
+                throw new Error('WebGL not supported');
+            }
+
+            this.renderer = new THREE.WebGLRenderer({ 
+                canvas: canvas,
+                context: context,
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            
+            this.renderer.setSize(800, 500);
+            this.renderer.shadowMap.enabled = true;
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            this.renderer.outputEncoding = THREE.sRGBEncoding;
+            this.renderer.physicallyCorrectLights = true;
+            this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            this.renderer.toneMappingExposure = 1.2;
+        } catch (error) {
+            console.error('Error creating WebGL renderer:', error);
+            throw new Error('Failed to initialize WebGL renderer');
+        }
         
         const viewer = document.getElementById('viewer');
         viewer.innerHTML = '';
@@ -295,7 +366,7 @@ class CarConfigurator {
     }
 
     setupControls() {
-        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.autoRotate = true;
@@ -304,6 +375,8 @@ class CarConfigurator {
         this.controls.maxDistance = 20;
         this.controls.maxPolarAngle = Math.PI / 2;
         this.controls.enablePan = false;
+        // request render when controls change
+        this.controls.addEventListener('change', () => this.requestRender());
     }
 
     setupEventListeners() {
@@ -427,24 +500,54 @@ class CarConfigurator {
 
     async loadCarModel() {
         this.showLoading();
+        const loadingStatus = document.getElementById('loading-status');
         
         try {
-            // Create enhanced car model with better geometry
-            this.createEnhancedCarModel();
+            if (loadingStatus) {
+                loadingStatus.textContent = 'Creating car model...';
+            }
             
-            // Simulate loading time for better UX
-            await new Promise(resolve => setTimeout(resolve, 1200));
+            // Create enhanced car model with better geometry
+            await this.createEnhancedCarModel();
+            
+            if (loadingStatus) {
+                loadingStatus.textContent = 'Finalizing setup...';
+            }
+            
+            // Short delay to ensure everything is rendered
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            if (!this.carModel || !this.scene) {
+                throw new Error('Car model or scene not properly initialized');
+            }
             
             this.hideLoading();
         } catch (error) {
             console.error('Error loading car model:', error);
             this.showError('Failed to load car model. Please try again.');
+            if (loadingStatus) {
+                loadingStatus.textContent = 'Error: ' + error.message;
+            }
+        }
+    }
+
+    showError(message) {
+        console.error(message);
+        const errorOverlay = document.getElementById('error-overlay');
+        const errorMessage = document.getElementById('error-message');
+        if (errorOverlay && errorMessage) {
+            errorMessage.textContent = message;
+            errorOverlay.style.display = 'flex';
+            this.hideLoading();
         }
     }
 
     createEnhancedCarModel() {
+        console.log('Creating car model...');
         if (this.carModel) {
+            // dispose previous model
             this.scene.remove(this.carModel);
+            this.disposeObject(this.carModel);
         }
         
         this.carModel = new THREE.Group();
@@ -475,6 +578,12 @@ class CarConfigurator {
         }
         
         this.scene.add(this.carModel);
+        // apply basic PBR tweaks to body material if present
+        if (this.materials.body) {
+            this.applyPBR(this.materials.body, { envMapIntensity: 1.0 });
+        }
+        // request a render for the new model
+        this.requestRender();
     }
 
     createCarBody() {
@@ -968,21 +1077,36 @@ class CarConfigurator {
 
     // UI helpers
     showLoading() {
-        document.getElementById('loading-overlay').style.display = 'flex';
-        // Simulate progress
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 10;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
-            }
-            document.getElementById('progress-fill').style.width = `${progress}%`;
-        }, 100);
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+            console.log('Loading screen shown');
+            // Simulate progress
+            let progress = 0;
+            const progressFill = document.getElementById('progress-fill');
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                }
+                if (progressFill) {
+                    progressFill.style.width = `${progress}%`;
+                }
+            }, 100);
+        } else {
+            console.error('Loading overlay element not found');
+        }
     }
 
     hideLoading() {
-        document.getElementById('loading-overlay').style.display = 'none';
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+            console.log('Loading screen hidden');
+        } else {
+            console.error('Loading overlay element not found');
+        }
     }
 
     showNotification(message, type = 'info') {
@@ -1032,11 +1156,61 @@ class CarConfigurator {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
+        this.requestRender();
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
+    requestRender() {
+        this.needsRender = true;
+    }
+
+    renderIfNeeded() {
+        if (!this.needsRender) return;
+        this.needsRender = false;
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
     }
+
+    startRenderLoop() {
+        const loop = () => {
+            this.renderIfNeeded();
+            requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+    }
+
+    // Utility to apply PBR-friendly tweaks to a material
+    applyPBR(material, options = {}) {
+        if (!material) return;
+        // Ensure physical correctness
+        material.envMapIntensity = options.envMapIntensity ?? 1.0;
+        material.metalness = options.metalness ?? material.metalness ?? 0.5;
+        material.roughness = options.roughness ?? material.roughness ?? 0.4;
+        material.needsUpdate = true;
+    }
+
+    // Dispose helper for objects and materials
+    disposeObject(obj) {
+        if (!obj) return;
+        if (obj.geometry) {
+            obj.geometry.dispose();
+        }
+        if (obj.material) {
+            const mat = obj.material;
+            if (Array.isArray(mat)) {
+                mat.forEach(m => {
+                    if (m.map) m.map.dispose();
+                    if (m.envMap) m.envMap.dispose();
+                    m.dispose();
+                });
+            } else {
+                if (mat.map) mat.map.dispose();
+                if (mat.envMap) mat.envMap.dispose();
+                mat.dispose();
+            }
+        }
+        if (obj.children) {
+            obj.children.forEach(child => this.disposeObject(child));
+        }
+    }
+
 }
