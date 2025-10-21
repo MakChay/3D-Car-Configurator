@@ -1,22 +1,18 @@
 {
   "name": "3d-car-configurator",
   "version": "1.0.0",
-  "description": "A professional 3D car configurator with realistic models and customization",
-  "main": "index.html",
+  "description": "Professional 3D Car Configurator for South African Market",
+  "main": "script.js",
   "scripts": {
-    "dev": "python -m http.server 3000",
-    "build": "echo 'No build process needed for static site'"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": [
-    "3d",
-    "car-configurator",
-    "threejs",
-    "webgl",
-    "automotive",
-    "customization"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "three": "^0.158.0",
+    "@types/three": "^0.158.0"
+  },
+  "devDependencies": {
+    "vite": "^4.4.0"
+  }
 }
