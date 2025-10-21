@@ -3,6 +3,260 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AutoConfig SA | 3D Car Configurator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button id="themeToggle" class="theme-btn">
+            <span class="sun">☀️</span>
+            <span class="moon">🌙</span>
+        </button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <h1>AutoConfig SA</h1>
+                <span>3D Car Configurator</span>
+            </div>
+            <nav class="nav">
+                <a href="#configurator" class="nav-link">Configurator</a>
+                <a href="#models" class="nav-link">Models</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Build Your Dream Car</h1>
+                <p>Customize every detail with our advanced 3D configurator. Built for South African car enthusiasts.</p>
+                <button class="cta-button" onclick="scrollToConfigurator()">Start Configuring</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Configurator -->
+    <section id="configurator" class="configurator-section">
+        <div class="container">
+            <div class="configurator-layout">
+                <!-- 3D Viewer -->
+                <div class="viewer-container">
+                    <div id="carViewer" class="car-viewer"></div>
+                    <div class="viewer-controls">
+                        <button id="rotateToggle" class="control-btn active">Auto Rotate</button>
+                        <button id="resetView" class="control-btn">Reset View</button>
+                    </div>
+                </div>
+
+                <!-- Configuration Panel -->
+                <div class="config-panel">
+                    <div class="panel-section">
+                        <h3>Car Model</h3>
+                        <div class="model-selector">
+                            <div class="model-option active" data-model="sedan">
+                                <img src="https://via.placeholder.com/80x40/333/fff?text=Sedan" alt="Sedan">
+                                <span>Sedan</span>
+                            </div>
+                            <div class="model-option" data-model="suv">
+                                <img src="https://via.placeholder.com/80x40/333/fff?text=SUV" alt="SUV">
+                                <span>SUV</span>
+                            </div>
+                            <div class="model-option" data-model="sports">
+                                <img src="https://via.placeholder.com/80x40/333/fff?text=Sports" alt="Sports">
+                                <span>Sports</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>Exterior Color</h3>
+                        <div class="color-selector">
+                            <div class="color-option active" data-color="#2c3e50" style="background-color: #2c3e50;"></div>
+                            <div class="color-option" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
+                            <div class="color-option" data-color="#3498db" style="background-color: #3498db;"></div>
+                            <div class="color-option" data-color="#f1c40f" style="background-color: #f1c40f;"></div>
+                            <div class="color-option" data-color="#1abc9c" style="background-color: #1abc9c;"></div>
+                            <div class="color-option" data-color="#9b59b6" style="background-color: #9b59b6;"></div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>Wheels</h3>
+                        <div class="wheel-selector">
+                            <div class="wheel-option active" data-wheel="standard">
+                                <img src="https://via.placeholder.com/60x60/333/fff?text=Std" alt="Standard">
+                                <span>Standard</span>
+                            </div>
+                            <div class="wheel-option" data-wheel="sport">
+                                <img src="https://via.placeholder.com/60x60/333/fff?text=Sport" alt="Sport">
+                                <span>Sport</span>
+                            </div>
+                            <div class="wheel-option" data-wheel="premium">
+                                <img src="https://via.placeholder.com/60x60/333/fff?text=Premium" alt="Premium">
+                                <span>Premium</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <h3>Interior</h3>
+                        <div class="interior-selector">
+                            <div class="interior-option active" data-interior="black">
+                                <div class="interior-preview" style="background-color: #2c3e50;"></div>
+                                <span>Black Leather</span>
+                            </div>
+                            <div class="interior-option" data-interior="brown">
+                                <div class="interior-preview" style="background-color: #8B4513;"></div>
+                                <span>Brown Leather</span>
+                            </div>
+                            <div class="interior-option" data-interior="beige">
+                                <div class="interior-preview" style="background-color: #F5F5DC;"></div>
+                                <span>Beige Leather</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-section">
+                        <div class="price-display">
+                            <span class="price-label">Total Price</span>
+                            <span class="price-amount">R 450,000</span>
+                        </div>
+                        <button class="save-config-btn">Save Configuration</button>
+                        <button class="share-config-btn">Share</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Models Section -->
+    <section id="models" class="models-section">
+        <div class="container">
+            <h2>Available Models</h2>
+            <div class="models-grid">
+                <div class="model-card">
+                    <div class="model-image">
+                        <img src="https://via.placeholder.com/300x200/333/fff?text=Sedan+Pro" alt="Sedan Pro">
+                    </div>
+                    <div class="model-info">
+                        <h3>Sedan Pro</h3>
+                        <p>Luxury sedan with premium features</p>
+                        <div class="model-price">From R 420,000</div>
+                    </div>
+                </div>
+                <div class="model-card">
+                    <div class="model-image">
+                        <img src="https://via.placeholder.com/300x200/333/fff?text=SUV+Elite" alt="SUV Elite">
+                    </div>
+                    <div class="model-info">
+                        <h3>SUV Elite</h3>
+                        <p>Spacious SUV for family adventures</p>
+                        <div class="model-price">From R 550,000</div>
+                    </div>
+                </div>
+                <div class="model-card">
+                    <div class="model-image">
+                        <img src="https://via.placeholder.com/300x200/333/fff?text=Sports+GT" alt="Sports GT">
+                    </div>
+                    <div class="model-info">
+                        <h3>Sports GT</h3>
+                        <p>High-performance sports car</p>
+                        <div class="model-price">From R 680,000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2>About AutoConfig SA</h2>
+            <div class="about-content">
+                <p>AutoConfig SA is South Africa's premier 3D car configurator, built specifically for the South African market. Experience your dream car like never before with our cutting-edge 3D visualization technology.</p>
+                <div class="features-grid">
+                    <div class="feature">
+                        <h3>🇿🇦 Local Pricing</h3>
+                        <p>All prices in South African Rand with local specifications</p>
+                    </div>
+                    <div class="feature">
+                        <h3>🔧 Real-time Customization</h3>
+                        <p>See changes instantly with our advanced 3D rendering</p>
+                    </div>
+                    <div class="feature">
+                        <h3>📱 Mobile Friendly</h3>
+                        <p>Works perfectly on all devices</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <form id="contactForm" class="contact-form">
+                <div class="form-group">
+                    <input type="text" id="name" name="name" placeholder="Your Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" name="email" placeholder="Your Email" required>
+                </div>
+                <div class="form-group">
+                    <input type="tel" id="phone" name="phone" placeholder="Your Phone (SA)">
+                </div>
+                <div class="form-group">
+                    <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>AutoConfig SA</h3>
+                    <p>South Africa's leading 3D car configurator platform.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p>📍 Johannesburg, SA</p>
+                    <p>📞 +27 11 123 4567</p>
+                    <p>✉️ info@autoconfigsa.co.za</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#">Facebook</a>
+                        <a href="#">Twitter</a>
+                        <a href="#">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AutoConfig SA. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+
     <title>AutoCraft Pro - Professional Car Configurator</title>
     <meta name="description" content="Design and customize your dream car with professional 3D configurator">
     <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
@@ -472,6 +726,6 @@
     </div>
 
     <!-- Application Scripts -->
-    <script type="module" src="scripts/app.js"></script>
-</body>
+    <script type="module" src="script.js"></script>
+
 </html>

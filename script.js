@@ -1,36 +1,185 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
+import gsap from 'gsap';
+
 class CarConfigurator {
     constructor() {
+        // Core components
         this.scene = null;
         this.camera = null;
         this.renderer = null;
         this.controls = null;
+        this.mixer = null;
+        this.clock = new THREE.Clock();
+
+        // Car state
         this.car = null;
         this.currentColor = '#2c3e50';
         this.currentModel = 'sedan';
+        this.currentWheels = 'standard';
+        this.currentInterior = 'black';
         this.isRotating = true;
+        this.animations = {};
+        this.currentViewMode = 'exterior';
+
+        // Loaders
+        this.loadingManager = new THREE.LoadingManager();
+        this.gltfLoader = new GLTFLoader(this.loadingManager);
+        this.dracoLoader = new DRACOLoader();
+        this.isLoading = true;
+        this.loadingManager = new THREE.LoadingManager();
+        this.gltfLoader = new GLTFLoader(this.loadingManager);
+        this.dracoLoader = new DRACOLoader();
+        this.isLoading = true;
+        
+        // Initialize loading screen
+        this.setupLoadingScreen();
         
         this.init();
         this.setupEventListeners();
         this.setupTheme();
     }
 
+    setupLoadingScreen() {
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loadingOverlay';
+        loadingOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        `;
+
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner';
+        spinner.style.cssText = `
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        `;
+
+        const loadingText = document.createElement('div');
+        loadingText.id = 'loadingText';
+        loadingText.textContent = 'Loading Car Model...';
+        loadingText.style.cssText = `
+            font-size: 1.2rem;
+            margin-top: 20px;
+        `;
+
+        const progressBar = document.createElement('div');
+        progressBar.style.cssText = `
+            width: 200px;
+            height: 4px;
+            background: #333;
+            margin-top: 10px;
+            border-radius: 2px;
+        `;
+
+        const progress = document.createElement('div');
+        progress.id = 'loadingProgress';
+        progress.style.cssText = `
+            width: 0%;
+            height: 100%;
+            background: #e74c3c;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        `;
+
+        progressBar.appendChild(progress);
+        loadingOverlay.appendChild(spinner);
+        loadingOverlay.appendChild(loadingText);
+        loadingOverlay.appendChild(progressBar);
+        document.body.appendChild(loadingOverlay);
+
+        // Add spinner animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Setup loading manager
+        this.loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+            const progress = document.getElementById('loadingProgress');
+            if (progress) {
+                progress.style.width = (itemsLoaded / itemsTotal * 100) + '%';
+            }
+        };
+
+        this.loadingManager.onLoad = () => {
+            this.isLoading = false;
+            setTimeout(() => {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    overlay.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => overlay.remove(), 500);
+                }
+            }, 500);
+        };
+    }
+
     init() {
         // Initialize Three.js scene
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0xf8f9fa);
+        
+        // Set up environment map
+        new RGBELoader()
+            .load('/assets/environment/studio.hdr', (texture) => {
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                this.scene.environment = texture;
+                this.scene.background = new THREE.Color(0xf8f9fa);
+            });
 
         // Camera
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.camera.position.set(5, 3, 5);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.camera.position.set(7, 3, 7);
 
         // Renderer
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer = new THREE.WebGLRenderer({ 
+            antialias: true,
+            powerPreference: "high-performance"
+        });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.0;
+        this.renderer.physicallyCorrectLights = true;
 
         const container = document.getElementById('carViewer');
         container.appendChild(this.renderer.domElement);
+
+        // Initialize DRACO loader for compressed models
+        this.dracoLoader.setDecoderPath('/draco/');
+        this.gltfLoader.setDRACOLoader(this.dracoLoader);
 
         // Controls
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
@@ -51,40 +200,107 @@ class CarConfigurator {
     }
 
     setupLighting() {
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Ambient light for general illumination
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         this.scene.add(ambientLight);
 
-        // Directional light
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(10, 20, 15);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        this.scene.add(directionalLight);
+        // Main key light
+        const keyLight = new THREE.DirectionalLight(0xffffff, 3);
+        keyLight.position.set(5, 5, 5);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 2048;
+        keyLight.shadow.mapSize.height = 2048;
+        keyLight.shadow.camera.near = 0.1;
+        keyLight.shadow.camera.far = 100;
+        keyLight.shadow.camera.left = -10;
+        keyLight.shadow.camera.right = 10;
+        keyLight.shadow.camera.top = 10;
+        keyLight.shadow.camera.bottom = -10;
+        keyLight.shadow.bias = -0.001;
+        this.scene.add(keyLight);
 
-        // Point lights for better car visualization
-        const pointLight1 = new THREE.PointLight(0xffffff, 0.5);
-        pointLight1.position.set(-10, 10, 10);
-        this.scene.add(pointLight1);
+        // Fill light
+        const fillLight = new THREE.DirectionalLight(0xffffff, 2);
+        fillLight.position.set(-5, 3, -5);
+        this.scene.add(fillLight);
 
-        const pointLight2 = new THREE.PointLight(0xffffff, 0.5);
-        pointLight2.position.set(10, 5, -10);
-        this.scene.add(pointLight2);
+        // Rim light for car highlights
+        const rimLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        rimLight.position.set(0, 5, -10);
+        this.scene.add(rimLight);
+
+        // Ground reflection light
+        const groundLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        groundLight.position.set(0, -5, 0);
+        this.scene.add(groundLight);
+
+        // Create a reflective ground plane
+        const groundGeometry = new THREE.PlaneGeometry(100, 100);
+        const groundMaterial = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            metalness: 0.5,
+            roughness: 0.2,
+            envMapIntensity: 1.0
+        });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -2;
+        ground.receiveShadow = true;
+        this.scene.add(ground);
     }
 
-    loadCarModel() {
-        // Create a realistic car model using high-poly geometry
-        this.createRealisticCar();
-    }
+    async loadCarModel() {
+        const loadingText = document.getElementById('loadingText');
+        if (loadingText) {
+            loadingText.textContent = `Loading ${this.currentModel.toUpperCase()}...`;
+        }
 
-    createRealisticCar() {
         // Clear existing car
         if (this.car) {
             this.scene.remove(this.car);
         }
 
-        this.car = new THREE.Group();
+        const modelPath = `/assets/models/${this.currentModel}.glb`;
+        
+        try {
+            const gltf = await this.gltfLoader.loadAsync(modelPath);
+            this.car = gltf.scene;
+            
+            // Apply materials and setup
+            this.car.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    
+                    // Apply materials based on mesh names
+                    if (child.name.includes('body')) {
+                        child.material = new THREE.MeshPhysicalMaterial({
+                            color: this.currentColor,
+                            metalness: 0.8,
+                            roughness: 0.2,
+                            clearcoat: 1.0,
+                            clearcoatRoughness: 0.1,
+                            envMapIntensity: 1.5
+                        });
+                    } else if (child.name.includes('glass')) {
+                        child.material = new THREE.MeshPhysicalMaterial({
+                            color: 0x88ccff,
+                            transmission: 0.9,
+                            transparent: true,
+                            metalness: 0.0,
+                            roughness: 0.1,
+                            ior: 1.5
+                        });
+                    } else if (child.name.includes('chrome')) {
+                        child.material = new THREE.MeshStandardMaterial({
+                            color: 0xffffff,
+                            metalness: 1.0,
+                            roughness: 0.1,
+                            envMapIntensity: 2.0
+                        });
+                    }
+                }
+            });
 
         // Car body with realistic curvature
         const bodyGeometry = this.createCarBodyGeometry();

@@ -1,13 +1,27 @@
 {
-  "name": "3d-shoe-configurator",
+  "name": "3d-car-configurator",
   "version": "1.0.0",
+  "description": "Professional 3D Car Configurator for South African Market",
+  "main": "script.js",
   "type": "module",
   "private": true,
-  "description": "3D Car Configurator built with Three.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.158.0",
+    "@types/three": "^0.158.0",
+    "firebase": "^10.5.0",
+    "howler": "^2.2.4",
+    "@firebase/auth": "^1.3.0",
+    "@firebase/firestore": "^4.3.0",
+    "@sendgrid/mail": "^7.7.0",
+    "gsap": "^3.12.2"
+  },
+  "devDependencies": {
+    "vite": "^5.1.0"
   },
   "keywords": [
     "3d",
@@ -17,12 +31,6 @@
     "automotive",
     "customization"
   ],
-  "author": "Your Name",
-  "license": "MIT",
-  "dependencies": {
-    "three": "^0.157.0"
-  },
-  "devDependencies": {
-    "vite": "^5.1.0"
-  }
+  "author": "MakChay",
+  "license": "MIT"
 }
