@@ -3,257 +3,475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoConfig SA | 3D Car Configurator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>AutoCraft Pro - Professional Car Configurator</title>
+    <meta name="description" content="Design and customize your dream car with professional 3D configurator">
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico">
+    <link rel="stylesheet" href="styles/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Theme Toggle -->
-    <div class="theme-toggle">
-        <button id="themeToggle" class="theme-btn">
-            <span class="sun">☀️</span>
-            <span class="moon">🌙</span>
-        </button>
-    </div>
-
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="logo">
-                <h1>AutoConfig SA</h1>
-                <span>3D Car Configurator</span>
-            </div>
-            <nav class="nav">
-                <a href="#configurator" class="nav-link">Configurator</a>
-                <a href="#models" class="nav-link">Models</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#contact" class="nav-link">Contact</a>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Build Your Dream Car</h1>
-                <p>Customize every detail with our advanced 3D configurator. Built for South African car enthusiasts.</p>
-                <button class="cta-button" onclick="scrollToConfigurator()">Start Configuring</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Main Configurator -->
-    <section id="configurator" class="configurator-section">
-        <div class="container">
-            <div class="configurator-layout">
-                <!-- 3D Viewer -->
-                <div class="viewer-container">
-                    <div id="carViewer" class="car-viewer"></div>
-                    <div class="viewer-controls">
-                        <button id="rotateToggle" class="control-btn active">Auto Rotate</button>
-                        <button id="resetView" class="control-btn">Reset View</button>
-                    </div>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>AutoCraft Pro</h1>
+                    <span class="tagline">Design Your Dream Car</span>
                 </div>
+                    <div class="header-actions">
+                        <button id="theme-toggle" class="control-btn" aria-label="Toggle theme">🌙</button>
+                    </div>
+                <nav class="main-nav">
+                    <a href="#gallery" class="nav-link">Gallery</a>
+                    <a href="#about" class="nav-link">About</a>
+                    <a href="#contact" class="nav-link">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <main class="configurator-main">
+            <div class="configurator-grid">
+                <!-- 3D Viewer Section -->
+                <section class="viewer-section">
+                    <div class="viewer-header">
+                        <h2 id="current-model">Hyper Sport</h2>
+                        <p id="model-description">0-100 km/h in 2.9s • Top speed 350 km/h</p>
+                    </div>
+                    
+                    <div class="viewer-container">
+                        <div id="viewer"></div>
+                        
+                        <div class="loading-overlay" id="loading-overlay">
+                            <div class="loading-content">
+                                <div class="loading-spinner"></div>
+                                <h3>Loading Your Car</h3>
+                                <p>Preparing high-quality 3D visualization...</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progress-fill"></div>
+                                </div>
+                                <div class="loading-status" id="loading-status"></div>
+                            </div>
+                        </div>
+                        <div class="error-overlay" id="error-overlay" style="display: none;">
+                            <div class="error-content">
+                                <h3>Error Loading Car</h3>
+                                <p id="error-message"></p>
+                                <button onclick="location.reload()">Try Again</button>
+                            </div>
+                        </div>
+
+                        <div class="viewer-controls">
+                            <div class="control-group">
+                                <button class="control-btn" id="rotate-toggle" title="Auto Rotate">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 4v6h6"></path>
+                                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                    </svg>
+                                </button>
+                                <button class="control-btn" id="reset-view" title="Reset View">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                        <path d="M3 3v5h5"></path>
+                                    </svg>
+                                </button>
+                                <button class="control-btn" id="toggle-lights" title="Toggle Lights">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path>
+                                        <path d="M9 18h6"></path>
+                                        <path d="M10 22h4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="camera-presets">
+                                <button class="preset-btn active" data-view="front">Front</button>
+                                <button class="preset-btn" data-view="side">Side</button>
+                                <button class="preset-btn" data-view="rear">Rear</button>
+                                <button class="preset-btn" data-view="interior">Interior</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="model-selection">
+                        <h3>Choose Your Model</h3>
+                        <div class="model-grid">
+                            <div class="model-card active" data-model="sports-car">
+                                <div class="model-preview sports"></div>
+                                <span>Hyper Sport</span>
+                                <div class="price-tag">From $185,000</div>
+                            </div>
+                            <div class="model-card" data-model="sedan">
+                                <div class="model-preview sedan"></div>
+                                <span>GT Sedan</span>
+                                <div class="price-tag">From $95,000</div>
+                            </div>
+                            <div class="model-card" data-model="suv">
+                                <div class="model-preview suv"></div>
+                                <span>Urban SUV</span>
+                                <div class="price-tag">From $75,000</div>
+                            </div>
+                            <div class="model-card" data-model="truck">
+                                <div class="model-preview truck"></div>
+                                <span>Adventure 4x4</span>
+                                <div class="price-tag">From $65,000</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- Configuration Panel -->
-                <div class="config-panel">
-                    <div class="panel-section">
-                        <h3>Car Model</h3>
-                        <div class="model-selector">
-                            <div class="model-option active" data-model="sedan">
-                                <img src="https://via.placeholder.com/80x40/333/fff?text=Sedan" alt="Sedan">
-                                <span>Sedan</span>
+                <section class="config-panel">
+                    <div class="panel-header">
+                        <h2>Customize Your Car</h2>
+                        <div class="configuration-steps">
+                            <div class="step active" data-step="exterior">
+                                <span class="step-number">1</span>
+                                <span class="step-label">Exterior</span>
                             </div>
-                            <div class="model-option" data-model="suv">
-                                <img src="https://via.placeholder.com/80x40/333/fff?text=SUV" alt="SUV">
-                                <span>SUV</span>
+                            <div class="step" data-step="interior">
+                                <span class="step-number">2</span>
+                                <span class="step-label">Interior</span>
                             </div>
-                            <div class="model-option" data-model="sports">
-                                <img src="https://via.placeholder.com/80x40/333/fff?text=Sports" alt="Sports">
-                                <span>Sports</span>
+                            <div class="step" data-step="wheels">
+                                <span class="step-number">3</span>
+                                <span class="step-label">Wheels</span>
                             </div>
-                        </div>
-                    </div>
-
-                    <div class="panel-section">
-                        <h3>Exterior Color</h3>
-                        <div class="color-selector">
-                            <div class="color-option active" data-color="#2c3e50" style="background-color: #2c3e50;"></div>
-                            <div class="color-option" data-color="#e74c3c" style="background-color: #e74c3c;"></div>
-                            <div class="color-option" data-color="#3498db" style="background-color: #3498db;"></div>
-                            <div class="color-option" data-color="#f1c40f" style="background-color: #f1c40f;"></div>
-                            <div class="color-option" data-color="#1abc9c" style="background-color: #1abc9c;"></div>
-                            <div class="color-option" data-color="#9b59b6" style="background-color: #9b59b6;"></div>
-                        </div>
-                    </div>
-
-                    <div class="panel-section">
-                        <h3>Wheels</h3>
-                        <div class="wheel-selector">
-                            <div class="wheel-option active" data-wheel="standard">
-                                <img src="https://via.placeholder.com/60x60/333/fff?text=Std" alt="Standard">
-                                <span>Standard</span>
-                            </div>
-                            <div class="wheel-option" data-wheel="sport">
-                                <img src="https://via.placeholder.com/60x60/333/fff?text=Sport" alt="Sport">
-                                <span>Sport</span>
-                            </div>
-                            <div class="wheel-option" data-wheel="premium">
-                                <img src="https://via.placeholder.com/60x60/333/fff?text=Premium" alt="Premium">
-                                <span>Premium</span>
+                            <div class="step" data-step="features">
+                                <span class="step-number">4</span>
+                                <span class="step-label">Features</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="panel-section">
-                        <h3>Interior</h3>
-                        <div class="interior-selector">
-                            <div class="interior-option active" data-interior="black">
-                                <div class="interior-preview" style="background-color: #2c3e50;"></div>
-                                <span>Black Leather</span>
+                    <div class="panel-content">
+                        <!-- Exterior Configuration -->
+                        <div class="config-section active" id="exterior-section">
+                            <div class="option-group">
+                                <h3>Paint Color</h3>
+                                <div class="color-grid">
+                                    <div class="color-option active" data-color="#1a1a1a" data-name="Carbon Black">
+                                        <div class="color-swatch" style="background-color: #1a1a1a;"></div>
+                                        <span>Carbon Black</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="color-option" data-color="#dc2626" data-name="Racing Red">
+                                        <div class="color-swatch" style="background-color: #dc2626;"></div>
+                                        <span>Racing Red</span>
+                                        <span class="price">+$1,200</span>
+                                    </div>
+                                    <div class="color-option" data-color="#2563eb" data-name="Performance Blue">
+                                        <div class="color-swatch" style="background-color: #2563eb;"></div>
+                                        <span>Performance Blue</span>
+                                        <span class="price">+$1,200</span>
+                                    </div>
+                                    <div class="color-option" data-color="#f59e0b" data-name="Sunset Gold">
+                                        <div class="color-swatch" style="background-color: #f59e0b;"></div>
+                                        <span>Sunset Gold</span>
+                                        <span class="price">+$2,500</span>
+                                    </div>
+                                    <div class="color-option" data-color="#ffffff" data-name="Arctic White">
+                                        <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                        <span>Arctic White</span>
+                                        <span class="price">+$800</span>
+                                    </div>
+                                    <div class="color-option" data-color="#6b7280" data-name="Stealth Gray">
+                                        <div class="color-swatch" style="background-color: #6b7280;"></div>
+                                        <span>Stealth Gray</span>
+                                        <span class="price">+$900</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="interior-option" data-interior="brown">
-                                <div class="interior-preview" style="background-color: #8B4513;"></div>
-                                <span>Brown Leather</span>
+
+                            <div class="option-group">
+                                <h3>Paint Finish</h3>
+                                <div class="finish-grid">
+                                    <div class="finish-option active" data-finish="gloss">
+                                        <div class="finish-preview gloss"></div>
+                                        <span>High-Gloss</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="finish-option" data-finish="matte">
+                                        <div class="finish-preview matte"></div>
+                                        <span>Satin Matte</span>
+                                        <span class="price">+$3,500</span>
+                                    </div>
+                                    <div class="finish-option" data-finish="metallic">
+                                        <div class="finish-preview metallic"></div>
+                                        <span>Metallic</span>
+                                        <span class="price">+$2,200</span>
+                                    </div>
+                                    <div class="finish-option" data-finish="chrome">
+                                        <div class="finish-preview chrome"></div>
+                                        <span>Chrome</span>
+                                        <span class="price">+$5,000</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="interior-option" data-interior="beige">
-                                <div class="interior-preview" style="background-color: #F5F5DC;"></div>
-                                <span>Beige Leather</span>
+
+                            <div class="option-group">
+                                <h3>Brake Calipers</h3>
+                                <div class="calipers-grid">
+                                    <div class="caliper-option active" data-calipers="black">
+                                        <div class="caliper-preview black"></div>
+                                        <span>Black</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="caliper-option" data-calipers="red">
+                                        <div class="caliper-preview red"></div>
+                                        <span>Red</span>
+                                        <span class="price">+$1,200</span>
+                                    </div>
+                                    <div class="caliper-option" data-calipers="yellow">
+                                        <div class="caliper-preview yellow"></div>
+                                        <span>Yellow</span>
+                                        <span class="price">+$1,200</span>
+                                    </div>
+                                    <div class="caliper-option" data-calipers="blue">
+                                        <div class="caliper-preview blue"></div>
+                                        <span>Blue</span>
+                                        <span class="price">+$1,200</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interior Configuration -->
+                        <div class="config-section" id="interior-section">
+                            <div class="option-group">
+                                <h3>Interior Material</h3>
+                                <div class="material-grid">
+                                    <div class="material-option active" data-material="leather-black">
+                                        <div class="material-preview leather-black"></div>
+                                        <span>Black Nappa</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="material-option" data-material="leather-brown">
+                                        <div class="material-preview leather-brown"></div>
+                                        <span>Cognac Leather</span>
+                                        <span class="price">+$3,500</span>
+                                    </div>
+                                    <div class="material-option" data-material="leather-beige">
+                                        <div class="material-preview leather-beige"></div>
+                                        <span>Ivory White</span>
+                                        <span class="price">+$2,800</span>
+                                    </div>
+                                    <div class="material-option" data-material="alcantara">
+                                        <div class="material-preview alcantara"></div>
+                                        <span>Alcantara</span>
+                                        <span class="price">+$4,200</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="option-group">
+                                <h3>Interior Trim</h3>
+                                <div class="trim-grid">
+                                    <div class="trim-option active" data-trim="carbon">
+                                        <div class="trim-preview carbon"></div>
+                                        <span>Carbon Fiber</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="trim-option" data-trim="wood">
+                                        <div class="trim-preview wood"></div>
+                                        <span>Open-Pore Wood</span>
+                                        <span class="price">+$2,800</span>
+                                    </div>
+                                    <div class="trim-option" data-trim="aluminum">
+                                        <div class="trim-preview aluminum"></div>
+                                        <span>Brushed Aluminum</span>
+                                        <span class="price">+$1,800</span>
+                                    </div>
+                                    <div class="trim-option" data-trim="titanium">
+                                        <div class="trim-preview titanium"></div>
+                                        <span>Forged Titanium</span>
+                                        <span class="price">+$5,500</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wheels Configuration -->
+                        <div class="config-section" id="wheels-section">
+                            <div class="option-group">
+                                <h3>Wheel Design</h3>
+                                <div class="wheels-grid">
+                                    <div class="wheel-option active" data-wheels="aero">
+                                        <div class="wheel-preview aero"></div>
+                                        <span>Aero 20"</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="wheel-option" data-wheels="sport">
+                                        <div class="wheel-preview sport"></div>
+                                        <span>Sport 21"</span>
+                                        <span class="price">+$2,500</span>
+                                    </div>
+                                    <div class="wheel-option" data-wheels="premium">
+                                        <div class="wheel-preview premium"></div>
+                                        <span>Premium 22"</span>
+                                        <span class="price">+$4,800</span>
+                                    </div>
+                                    <div class="wheel-option" data-wheels="racing">
+                                        <div class="wheel-preview racing"></div>
+                                        <span>Racing 23"</span>
+                                        <span class="price">+$7,200</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="option-group">
+                                <h3>Performance Tires</h3>
+                                <div class="tires-grid">
+                                    <div class="tire-option active" data-tires="summer">
+                                        <div class="tire-preview summer"></div>
+                                        <span>Summer</span>
+                                        <span class="price">+$0</span>
+                                    </div>
+                                    <div class="tire-option" data-tires="performance">
+                                        <div class="tire-preview performance"></div>
+                                        <span>High-Performance</span>
+                                        <span class="price">+$1,800</span>
+                                    </div>
+                                    <div class="tire-option" data-tires="track">
+                                        <div class="tire-preview track"></div>
+                                        <span>Track Focused</span>
+                                        <span class="price">+$3,200</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Features Configuration -->
+                        <div class="config-section" id="features-section">
+                            <div class="option-group">
+                                <h3>Performance Features</h3>
+                                <div class="features-list">
+                                    <div class="feature-option active" data-feature="spoiler" data-price="4500">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Active Rear Spoiler</span>
+                                            <span class="feature-desc">Automatically adjusts for optimal downforce</span>
+                                        </div>
+                                        <span class="price">+$4,500</span>
+                                    </div>
+                                    <div class="feature-option" data-feature="sport-exhaust" data-price="3200">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Sport Exhaust</span>
+                                            <span class="feature-desc">Enhanced sound and performance</span>
+                                        </div>
+                                        <span class="price">+$3,200</span>
+                                    </div>
+                                    <div class="feature-option active" data-feature="suspension" data-price="5800">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Adaptive Suspension</span>
+                                            <span class="feature-desc">Adjustable ride comfort and handling</span>
+                                        </div>
+                                        <span class="price">+$5,800</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="option-group">
+                                <h3>Luxury & Technology</h3>
+                                <div class="features-list">
+                                    <div class="feature-option active" data-feature="premium-sound" data-price="4200">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Premium Sound System</span>
+                                            <span class="feature-desc">3D surround sound with 18 speakers</span>
+                                        </div>
+                                        <span class="price">+$4,200</span>
+                                    </div>
+                                    <div class="feature-option" data-feature="sunroof" data-price="2800">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Panoramic Sunroof</span>
+                                            <span class="feature-desc">Full-length electrochromic glass roof</span>
+                                        </div>
+                                        <span class="price">+$2,800</span>
+                                    </div>
+                                    <div class="feature-option active" data-feature="led-lights" data-price="2200">
+                                        <div class="feature-checkbox"></div>
+                                        <div class="feature-info">
+                                            <span class="feature-name">Matrix LED Headlights</span>
+                                            <span class="feature-desc">Adaptive high-beam technology</span>
+                                        </div>
+                                        <span class="price">+$2,200</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </section>
+            </div>
 
-                    <div class="price-section">
-                        <div class="price-display">
-                            <span class="price-label">Total Price</span>
-                            <span class="price-amount">R 450,000</span>
+            <!-- Summary Panel -->
+            <div class="summary-panel">
+                <div class="summary-content">
+                    <div class="price-summary">
+                        <div class="base-price">
+                            <span>Base Price</span>
+                            <span id="base-price">$185,000</span>
                         </div>
-                        <button class="save-config-btn">Save Configuration</button>
-                        <button class="share-config-btn">Share</button>
+                        <div class="options-total">
+                            <span>Options Total</span>
+                            <span id="options-total">+$12,500</span>
+                        </div>
+                        <div class="final-price">
+                            <span>Total Price</span>
+                            <span id="final-price">$197,500</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-secondary" id="share-config">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                            </svg>
+                            Share
+                        </button>
+                        <button class="btn-primary" id="save-config">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save
+                        </button>
+                        <button class="btn-accent" id="contact-dealer">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                            Contact Dealer
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </main>
 
-    <!-- Models Section -->
-    <section id="models" class="models-section">
-        <div class="container">
-            <h2>Available Models</h2>
-            <div class="models-grid">
-                <div class="model-card">
-                    <div class="model-image">
-                        <img src="https://via.placeholder.com/300x200/333/fff?text=Sedan+Pro" alt="Sedan Pro">
-                    </div>
-                    <div class="model-info">
-                        <h3>Sedan Pro</h3>
-                        <p>Luxury sedan with premium features</p>
-                        <div class="model-price">From R 420,000</div>
-                    </div>
-                </div>
-                <div class="model-card">
-                    <div class="model-image">
-                        <img src="https://via.placeholder.com/300x200/333/fff?text=SUV+Elite" alt="SUV Elite">
-                    </div>
-                    <div class="model-info">
-                        <h3>SUV Elite</h3>
-                        <p>Spacious SUV for family adventures</p>
-                        <div class="model-price">From R 550,000</div>
-                    </div>
-                </div>
-                <div class="model-card">
-                    <div class="model-image">
-                        <img src="https://via.placeholder.com/300x200/333/fff?text=Sports+GT" alt="Sports GT">
-                    </div>
-                    <div class="model-info">
-                        <h3>Sports GT</h3>
-                        <p>High-performance sports car</p>
-                        <div class="model-price">From R 680,000</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="about-section">
-        <div class="container">
-            <h2>About AutoConfig SA</h2>
-            <div class="about-content">
-                <p>AutoConfig SA is South Africa's premier 3D car configurator, built specifically for the South African market. Experience your dream car like never before with our cutting-edge 3D visualization technology.</p>
-                <div class="features-grid">
-                    <div class="feature">
-                        <h3>🇿🇦 Local Pricing</h3>
-                        <p>All prices in South African Rand with local specifications</p>
-                    </div>
-                    <div class="feature">
-                        <h3>🔧 Real-time Customization</h3>
-                        <p>See changes instantly with our advanced 3D rendering</p>
-                    </div>
-                    <div class="feature">
-                        <h3>📱 Mobile Friendly</h3>
-                        <p>Works perfectly on all devices</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section">
-        <div class="container">
-            <h2>Contact Us</h2>
-            <form id="contactForm" class="contact-form">
-                <div class="form-group">
-                    <input type="text" id="name" name="name" placeholder="Your Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" id="email" name="email" placeholder="Your Email" required>
-                </div>
-                <div class="form-group">
-                    <input type="tel" id="phone" name="phone" placeholder="Your Phone (SA)">
-                </div>
-                <div class="form-group">
-                    <textarea id="message" name="message" placeholder="Your Message" rows="5" required></textarea>
-                </div>
-                <button type="submit" class="submit-btn">Send Message</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
+        <footer class="app-footer">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>AutoConfig SA</h3>
-                    <p>South Africa's leading 3D car configurator platform.</p>
+                    <h3>AutoCraft Pro</h3>
+                    <p>Professional car configuration platform</p>
                 </div>
                 <div class="footer-section">
-                    <h4>Contact Info</h4>
-                    <p>📍 Johannesburg, SA</p>
-                    <p>📞 +27 11 123 4567</p>
-                    <p>✉️ info@autoconfigsa.co.za</p>
+                    <h4>Contact</h4>
+                    <p>hello@autocraftpro.com</p>
+                    <p>+1 (555) 123-4567</p>
                 </div>
                 <div class="footer-section">
-                    <h4>Follow Us</h4>
-                    <div class="social-links">
-                        <a href="#">Facebook</a>
-                        <a href="#">Twitter</a>
-                        <a href="#">Instagram</a>
-                    </div>
+                    <h4>Portfolio Project</h4>
+                    <p>3D Car Configurator</p>
+                    <p>Built with Three.js</p>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 AutoConfig SA. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js"></script>
-    <script src="script.js"></script>
+    <!-- Application Scripts -->
+    <script type="module" src="scripts/app.js"></script>
 </body>
 </html>
